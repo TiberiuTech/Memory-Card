@@ -3,8 +3,13 @@ import { StyleSheet, Pressable, View, Text, Dimensions, Animated } from 'react-n
 import { useGame } from '../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
-// Calculăm dimensiunea cardului pentru a se potrivi exact 4 pe un rând
-const CARD_SIZE = Math.min(width * 0.22, height * 0.22); // Asigură 4 pe rând cu spațiu între ele
+// Calculăm dimensiunea cardului bazată pe orientarea portrait
+// În modul portrait, folosim lățimea ecranului pentru a calcula dimensiunea cardului
+// Vrem 4 carduri pe lățime, deci împărțim lățimea la 4 și reducem puțin pentru marje
+
+// Calculăm dimensiunea cardului pentru modul portrait
+const CARD_WIDTH = width * 0.22; // Aproximativ 1/4 din lățimea ecranului minus margini
+const CARD_HEIGHT = CARD_WIDTH * 1.3; // Păstrăm raportul de aspect
 
 const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnimation }) => {
   const { difficulty } = useGame();
@@ -14,8 +19,9 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnima
   useEffect(() => {
     Animated.timing(flipAnimation, {
       toValue: isFlipped ? 1 : 0,
-      duration: 300,
+      duration: 350, // Crescută de la 250ms la 350ms pentru animație mai vizibilă
       useNativeDriver: true,
+      delay: isFlipped ? 100 : 0, // Adăugăm o mică întârziere când întoarcem cartea
     }).start();
   }, [isFlipped]);
   
@@ -30,12 +36,25 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnima
     outputRange: ['0deg', '180deg'],
   });
   
+  // Adăugăm și o animație de opacitate pentru a face cardul mai vizibil
+  const frontOpacity = flipAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0, 0, 1],
+  });
+  
+  const backOpacity = flipAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 0, 0],
+  });
+  
   const frontAnimatedStyle = {
     transform: [{ rotateY: frontInterpolate }],
+    opacity: frontOpacity,
   };
   
   const backAnimatedStyle = {
     transform: [{ rotateY: backInterpolate }],
+    opacity: backOpacity,
   };
   
   // Stiluri condiționale pentru cartonașe potrivite
@@ -43,24 +62,32 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnima
     ? [styles.card, styles.matchedCard] 
     : styles.card;
   
-  // Animație pentru amestecarea cărților (doar pentru modul 'advance' și 'hard')
-  const translateX = position && shuffleAnimation ? 
-    shuffleAnimation.interpolate({
+  // Calculăm transformările pentru animație sau folosim valori statice
+  let cardTransform = [];
+  
+  if (position && shuffleAnimation) {
+    // Animație pentru poziții când există shuffleAnimation
+    const translateX = shuffleAnimation.interpolate({
       inputRange: [0, 1],
       outputRange: [0, position.x || 0],
-    }) : new Animated.Value(0);
-  
-  const translateY = position && shuffleAnimation ? 
-    shuffleAnimation.interpolate({
+    });
+    
+    const translateY = shuffleAnimation.interpolate({
       inputRange: [0, 1],
       outputRange: [0, position.y || 0],
-    }) : new Animated.Value(0);
+    });
+    
+    cardTransform = [
+      { translateX },
+      { translateY }
+    ];
+  }
   
   return (
     <Pressable
       style={[
         styles.container,
-        { transform: [{ translateX }, { translateY }] }
+        cardTransform.length > 0 ? { transform: cardTransform } : {}
       ]}
       onPress={() => !isFlipped && !isMatched && onPress(id)}
       disabled={isFlipped || isMatched}
@@ -80,31 +107,33 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnima
 
 const styles = StyleSheet.create({
   container: {
-    width: CARD_SIZE,
-    height: CARD_SIZE * 1.4,
-    margin: 5,
-    // Adăugăm o lățime minimă pentru a asigura 4 pe un rând
-    minWidth: '23%',
-    maxWidth: '23%',
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
+    margin: 3,
+    // Folosim o abordare flexibilă pentru lățime
+    flex: 0, // Dezactivăm flex pentru a folosi dimensiuni fixe
+    maxWidth: CARD_WIDTH,
+    perspective: 1000, // Adăugăm perspectivă pentru efect 3D mai bun
   },
   cardFace: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     backfaceVisibility: 'hidden',
+    borderRadius: 6,
   },
   card: {
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 6,
     backgroundColor: '#fff',
-    elevation: 5,
+    elevation: 5, // Creștem elevația pentru umbră mai pronunțată
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOpacity: 0.3, // Creștem opacitatea umbrei
+    shadowRadius: 3, // Creștem raza umbrei
   },
   cardBack: {
     backgroundColor: '#5c6bc0',
@@ -113,12 +142,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#81c784',
   },
   cardText: {
-    fontSize: CARD_SIZE * 0.4,
+    fontSize: Math.max(CARD_WIDTH * 0.45, 14), // Asigurăm o dimensiune lizibilă
     fontWeight: 'bold',
     color: '#333',
   },
   cardBackText: {
-    fontSize: CARD_SIZE * 0.4,
+    fontSize: Math.max(CARD_WIDTH * 0.45, 14),
     fontWeight: 'bold',
     color: '#fff',
   },

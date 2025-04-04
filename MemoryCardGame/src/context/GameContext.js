@@ -11,7 +11,7 @@ const INITIAL_STATE = {
   selectedCards: [],
   currentScore: 0,
   lives: 3,
-  timePerCard: 4, // în secunde
+  timePerCard: 1.5, // Modificat la 1.5 secunde pentru modul ușor inițial
 };
 
 export const GameProvider = ({ children }) => {
@@ -104,6 +104,7 @@ export const GameProvider = ({ children }) => {
   
   // Funcții helper pentru calcularea timpului în funcție de nivel
   const getTimeForEasyLevel = (level) => {
+    // Implementăm timpii specifici pentru fiecare nivel în modul easy
     switch (level) {
       case 1: return 4.0;
       case 2: return 3.8;
@@ -120,8 +121,20 @@ export const GameProvider = ({ children }) => {
   };
   
   const getTimeForAdvanceLevel = (level) => {
-    // Folosim aceleași intervale de timp ca la easy
-    return getTimeForEasyLevel(level);
+    // Folosim aceleași intervale de timp ca înainte pentru Avansat
+    switch (level) {
+      case 1: return 4.0;
+      case 2: return 3.8;
+      case 3: return 3.5;
+      case 4: return 3.3;
+      case 5: return 3.0;
+      case 6: return 2.8;
+      case 7: return 2.5;
+      case 8: return 2.3;
+      case 9: return 2.0;
+      case 10: return 1.3;
+      default: return 4.0;
+    }
   };
   
   // Funcție pentru a primi recompense în funcție de dificultate

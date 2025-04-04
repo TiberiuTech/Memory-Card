@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, Modal, SafeAreaView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, Modal, SafeAreaView, Dimensions } from 'react-native';
 import GameBoard from '../components/GameBoard';
 import GameStats from '../components/GameStats';
 import { useGame } from '../context/GameContext';
+
+const { width } = Dimensions.get('window');
 
 const GameScreen = ({ navigation }) => {
   const { 
@@ -45,15 +47,15 @@ const GameScreen = ({ navigation }) => {
       <View style={styles.container}>
         <View style={styles.header}>
           <GameStats />
-          
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handlePause}
-            >
-              <Text style={styles.buttonText}>⏸️ Pauză</Text>
-            </TouchableOpacity>
-          </View>
+        </View>
+        
+        <View style={styles.pauseButtonContainer}>
+          <TouchableOpacity
+            style={styles.pauseButton}
+            onPress={handlePause}
+          >
+            <Text style={styles.buttonText}>⏸️ Pauză</Text>
+          </TouchableOpacity>
         </View>
         
         {!isGameOver ? (
@@ -116,16 +118,27 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 10,
+    padding: 5, // Mai puțin padding în modul portrait
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
-  actions: {
-    flexDirection: 'row',
+  pauseButtonContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 10,
+    marginRight: 10,
+  },
+  pauseButton: {
+    backgroundColor: '#5c6bc0',
+    paddingHorizontal: 15,
+    paddingVertical: 6,
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   button: {
     backgroundColor: '#5c6bc0',

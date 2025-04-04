@@ -20,9 +20,9 @@ const HomeScreen = ({ navigation }) => {
   const [showDifficultyModal, setShowDifficultyModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
   
-  // Începe jocul cu dificultatea selectată
+  // Modificat: Acum deschide modalul de dificultate în loc să înceapă jocul direct
   const handleStartGame = () => {
-    navigation.navigate('Game');
+    setShowDifficultyModal(true);
   };
   
   // Deschide magazinul
@@ -30,10 +30,12 @@ const HomeScreen = ({ navigation }) => {
     navigation.navigate('Shop');
   };
   
-  // Selectează dificultatea
+  // Selectează dificultatea și începe jocul
   const handleSelectDifficulty = (selectedDifficulty) => {
     updateDifficulty(selectedDifficulty);
     setShowDifficultyModal(false);
+    // Navigăm la joc după ce s-a selectat dificultatea
+    navigation.navigate('Game');
   };
   
   return (
@@ -61,13 +63,6 @@ const HomeScreen = ({ navigation }) => {
           
           <TouchableOpacity 
             style={styles.button}
-            onPress={() => setShowDifficultyModal(true)}
-          >
-            <Text style={styles.buttonText}>Dificultate</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.button}
             onPress={handleOpenShop}
           >
             <Text style={styles.buttonText}>Magazin</Text>
@@ -81,7 +76,7 @@ const HomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
         
-        {/* Modal pentru selectarea dificultății */}
+        {/* Modal pentru selectarea dificultății - acum apare la apăsarea butonului "Start Joc" */}
         <Modal
           visible={showDifficultyModal}
           transparent={true}
@@ -90,24 +85,24 @@ const HomeScreen = ({ navigation }) => {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selectează Dificultatea</Text>
+              <Text style={styles.modalTitle}>Alege Dificultatea</Text>
               
               <TouchableOpacity 
-                style={[styles.button, styles.difficultyButton, difficulty === 'easy' && styles.selectedButton]}
+                style={[styles.button, styles.difficultyButton]}
                 onPress={() => handleSelectDifficulty('easy')}
               >
                 <Text style={styles.buttonText}>Ușor (2 monede/pereche)</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.button, styles.difficultyButton, difficulty === 'advance' && styles.selectedButton]}
+                style={[styles.button, styles.difficultyButton]}
                 onPress={() => handleSelectDifficulty('advance')}
               >
                 <Text style={styles.buttonText}>Avansat (5 monede/pereche)</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.button, styles.difficultyButton, difficulty === 'hard' && styles.selectedButton]}
+                style={[styles.button, styles.difficultyButton]}
                 onPress={() => handleSelectDifficulty('hard')}
               >
                 <Text style={styles.buttonText}>Greu (15 monede/pereche)</Text>
@@ -123,7 +118,7 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </Modal>
         
-        {/* Modal pentru tutorial */}
+        {/* Modal pentru tutorial - rămâne neschimbat */}
         <Modal
           visible={showTutorialModal}
           transparent={true}

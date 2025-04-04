@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Alert, Dimensions, Animated } from 'react-native';
+import { View, StyleSheet, Alert, Dimensions, Animated, ScrollView } from 'react-native';
 import Card from './Card';
 import { useGame } from '../context/GameContext';
 
@@ -12,7 +12,8 @@ const GameBoard = () => {
     timePerCard, 
     updateLives, 
     addCoins, 
-    getRewardForMatch 
+    getRewardForMatch,
+    updateLevel 
   } = useGame();
   
   const [cards, setCards] = useState([]);
@@ -20,6 +21,7 @@ const GameBoard = () => {
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [initialViewPeriod, setInitialViewPeriod] = useState(false); // Stare pentru perioada inițială de vizualizare
   
   // Animație pentru amestecare (nivel advance și hard)
   const shuffleAnim = useRef(new Animated.Value(0)).current;
@@ -40,12 +42,30 @@ const GameBoard = () => {
     const newCards = shuffled.map((value, index) => ({
       id: index,
       value,
-      isFlipped: false,
+      isFlipped: difficulty === 'easy', // La nivelul easy, afișăm toate cărțile cu fața în sus inițial
       isMatched: false,
       position: getCardPosition(index),
     }));
     
     setCards(newCards);
+    
+    // Dacă suntem pe nivelul easy, întoarcem cărțile după timpul specific nivelului
+    if (difficulty === 'easy') {
+      setInitialViewPeriod(true); // Activăm perioada de vizualizare
+      
+      // Folosim timpul specific nivelului pentru perioada de vizualizare
+      const viewTime = timePerCard * 1000; // Convertim din secunde în milisecunde
+      
+      setTimeout(() => {
+        setCards(prevCards => 
+          prevCards.map(card => ({
+            ...card,
+            isFlipped: false
+          }))
+        );
+        setInitialViewPeriod(false); // Dezactivăm perioada de vizualizare
+      }, viewTime);
+    }
     
     // Pentru nivelurile avansate, realizăm și animație de amestecare
     if (difficulty === 'advance' || difficulty === 'hard') {
@@ -103,7 +123,7 @@ const GameBoard = () => {
   
   // Întoarcem o carte când este apăsată
   const flipCard = (id) => {
-    if (isProcessing || flippedIndexes.length >= 2 || gameCompleted) return;
+    if (isProcessing || flippedIndexes.length >= 2 || gameCompleted || initialViewPeriod) return;
     
     // Găsim indexul cărții în starea noastră
     const cardIndex = cards.findIndex(card => card.id === id);
@@ -157,7 +177,7 @@ const GameBoard = () => {
           if (difficulty === 'hard') {
             updateLives(-0.5);
           }
-        }, timePerCard * 1000);
+        }, 1500); // Fix la 1.5 secunde (1.5 secunde per carte)
       }
     }
   };
@@ -166,7 +186,41 @@ const GameBoard = () => {
   const checkGameCompletion = (pairsFound) => {
     if (pairsFound === 8) {  // 8 perechi în total
       setGameCompleted(true);
-      Alert.alert('Felicitări!', 'Ai completat nivelul!');
+      
+      if (level < 10) {
+        // Trecem la nivelul următor
+        const nextLevel = level + 1;
+        
+        // Afișăm mesajul de felicitare și anunțăm trecerea la nivelul următor
+        Alert.alert(
+          'Felicitări!', 
+          `Ai completat nivelul ${level}! Treci la nivelul ${nextLevel}.`,
+          [
+            { 
+              text: 'Continuă', 
+              onPress: () => {
+                // Actualizăm nivelul și pregătim noul joc
+                updateLevel(nextLevel);
+              }
+            }
+          ]
+        );
+      } else {
+        // Jucătorul a terminat toate nivelurile
+        Alert.alert(
+          'Felicitări!', 
+          'Ai completat toate nivelurile în modul ' + difficulty + '!',
+          [
+            { 
+              text: 'Joacă din nou', 
+              onPress: () => {
+                // Resetăm la nivelul 1
+                updateLevel(1);
+              }
+            }
+          ]
+        );
+      }
     }
   };
   
@@ -191,64 +245,69 @@ const GameBoard = () => {
   
   return (
     <View style={styles.container}>
-      <View style={styles.grid}>
-        <View style={styles.row}>
-          {cards.slice(0, 4).map((card) => (
-            <Card
-              key={card.id}
-              id={card.id}
-              value={card.value}
-              isFlipped={card.isFlipped}
-              isMatched={card.isMatched}
-              onPress={flipCard}
-              position={card.position}
-              shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
-            />
-          ))}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.grid}>
+          <View style={styles.row}>
+            {cards.slice(0, 4).map((card) => (
+              <Card
+                key={card.id}
+                id={card.id}
+                value={card.value}
+                isFlipped={card.isFlipped}
+                isMatched={card.isMatched}
+                onPress={flipCard}
+                position={card.position}
+                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+              />
+            ))}
+          </View>
+          <View style={styles.row}>
+            {cards.slice(4, 8).map((card) => (
+              <Card
+                key={card.id}
+                id={card.id}
+                value={card.value}
+                isFlipped={card.isFlipped}
+                isMatched={card.isMatched}
+                onPress={flipCard}
+                position={card.position}
+                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+              />
+            ))}
+          </View>
+          <View style={styles.row}>
+            {cards.slice(8, 12).map((card) => (
+              <Card
+                key={card.id}
+                id={card.id}
+                value={card.value}
+                isFlipped={card.isFlipped}
+                isMatched={card.isMatched}
+                onPress={flipCard}
+                position={card.position}
+                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+              />
+            ))}
+          </View>
+          <View style={styles.row}>
+            {cards.slice(12, 16).map((card) => (
+              <Card
+                key={card.id}
+                id={card.id}
+                value={card.value}
+                isFlipped={card.isFlipped}
+                isMatched={card.isMatched}
+                onPress={flipCard}
+                position={card.position}
+                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+              />
+            ))}
+          </View>
         </View>
-        <View style={styles.row}>
-          {cards.slice(4, 8).map((card) => (
-            <Card
-              key={card.id}
-              id={card.id}
-              value={card.value}
-              isFlipped={card.isFlipped}
-              isMatched={card.isMatched}
-              onPress={flipCard}
-              position={card.position}
-              shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
-            />
-          ))}
-        </View>
-        <View style={styles.row}>
-          {cards.slice(8, 12).map((card) => (
-            <Card
-              key={card.id}
-              id={card.id}
-              value={card.value}
-              isFlipped={card.isFlipped}
-              isMatched={card.isMatched}
-              onPress={flipCard}
-              position={card.position}
-              shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
-            />
-          ))}
-        </View>
-        <View style={styles.row}>
-          {cards.slice(12, 16).map((card) => (
-            <Card
-              key={card.id}
-              id={card.id}
-              value={card.value}
-              isFlipped={card.isFlipped}
-              isMatched={card.isMatched}
-              onPress={flipCard}
-              position={card.position}
-              shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
-            />
-          ))}
-        </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -258,19 +317,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 5,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
   },
   grid: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: width * 0.9,
-    height: height * 0.8,
-    maxWidth: 800,
+    width: width * 0.95, // Folosim aproape toată lățimea ecranului în modul portrait
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    marginVertical: 3,
   },
 });
 

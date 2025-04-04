@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { useGame } from '../context/GameContext';
+
+const { width } = Dimensions.get('window');
 
 const GameStats = () => {
   const { 
@@ -35,7 +37,7 @@ const GameStats = () => {
   
   return (
     <View style={styles.container}>
-      <View style={styles.statsRow}>
+      <View style={styles.topRow}>
         <View style={styles.stat}>
           <Text style={styles.statLabel}>Nivel:</Text>
           <Text style={styles.statValue}>{level}</Text>
@@ -53,7 +55,9 @@ const GameStats = () => {
           <Text style={styles.statLabel}>Monede:</Text>
           <Text style={styles.statValue}>{coins} 🪙</Text>
         </View>
-        
+      </View>
+      
+      <View style={styles.bottomRow}>
         {difficulty === 'hard' && (
           <View style={styles.stat}>
             <Text style={styles.statLabel}>Vieți:</Text>
@@ -65,16 +69,14 @@ const GameStats = () => {
           <Text style={styles.statLabel}>Timp/Carte:</Text>
           <Text style={styles.statValue}>{timePerCard}s</Text>
         </View>
-      </View>
-      
-      <View style={styles.rewardsInfo}>
-        <Text style={styles.rewardsText}>
-          Recompensă per pereche: {
-            difficulty === 'easy' ? '2 monede' : 
-            difficulty === 'advance' ? '5 monede' : 
-            '15 monede'
-          }
-        </Text>
+        
+        <View style={styles.rewardStat}>
+          <Text style={styles.statLabel}>Recompensă:</Text>
+          <Text style={styles.statValue}>
+            {difficulty === 'easy' ? '2' : 
+             difficulty === 'advance' ? '5' : '15'} 🪙/pereche
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -83,45 +85,46 @@ const GameStats = () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#f5f5f5',
-    padding: 10,
+    padding: 8,
     borderRadius: 10,
-    margin: 10,
+    marginVertical: 5,
+    marginHorizontal: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 2,
+    width: width * 0.95, // Ocupă mai multă lățime în orientarea portrait
   },
-  statsRow: {
+  topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    marginBottom: 4,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
   },
   stat: {
-    margin: 5,
-    minWidth: 70,
+    margin: 3,
+    flex: 1,
+  },
+  rewardStat: {
+    margin: 3,
+    flex: 1.5, // Puțin mai mare pentru textul mai lung
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
     fontWeight: 'bold',
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
     fontWeight: 'bold',
-  },
-  rewardsInfo: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  rewardsText: {
-    fontSize: 12,
-    color: '#666',
-    fontStyle: 'italic',
   },
 });
 
