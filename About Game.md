@@ -1,6 +1,9 @@
 Card Memory Game
 
-# Jocul va avea, level per utilzator poti debloca carduri numai la un anumit lv, bani , shp unde poti gasi carduri desenate
+# Jocul va avea, level per utilzator poti debloca carduri numai la un anumit lv, bani , shp unde poti gasi carduri desenate,va exista un shop unde vor fi carduri si se pot cumpara,vor exista monede (adica bani)
+
+
+pentru prima implementare cartile vor fi colorate adica sa putem juca, nu pe spate pe fata
 
 MATRICEA
 
@@ -9,7 +12,7 @@ MATRICEA
 (9 10 11 12)
 (13 14 15 16)
 
-#Easy -> 
+#Easy -> monedele adica banii per pereche intoarsa la lv easy este de 2 monede per pereche descoperita
 
 (lv 1-lv 10) 
 
@@ -33,7 +36,7 @@ lv 9- 2.0 secunde
 
 lv 10- 1.3 secunde
 
-#Advance
+#Advance -> monedele adica banii per pereche intoarsa la lv easy este de 5 monede per pereche descoperita
 
 - cardurile se vor intoarce cu spatele si incep sa se amestece intre ele
 
@@ -164,7 +167,9 @@ lv 10- 1.3 secunde
 1-12->12-1
 
 
-#Hard - acest nivel va avea 3 vieti la fiecare pereche neoptrivita va scadea o jumatate de viata timp cat cartile vor fi cu fata la fiecare nivel 3.5 secunde
+#Hard -> monedele adica banii per pereche intoarsa la lv easy este de 15 monede per pereche descoperita 
+
+acest nivel va avea 3 vieti la fiecare pereche neoptrivita va scadea o jumatate de viata timp cat cartile vor fi cu fata la fiecare nivel 3.5 secunde
 
 -cardurile nu se vor arata vor fi cu spatele si vor fi puse una peste alta in ordinea
 1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16
