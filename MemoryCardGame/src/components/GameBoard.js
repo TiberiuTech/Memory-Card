@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Alert, Dimensions, Animated, ScrollView } from 'react-native';
+import { View, StyleSheet, Alert, Dimensions, ScrollView, Animated } from 'react-native';
 import Card from './Card';
 import { useGame } from '../context/GameContext';
 
@@ -23,8 +23,9 @@ const GameBoard = () => {
   const [gameCompleted, setGameCompleted] = useState(false);
   const [initialViewPeriod, setInitialViewPeriod] = useState(false); // Stare pentru perioada inițială de vizualizare
   
-  // Animație pentru amestecare (nivel advance și hard)
-  const shuffleAnim = useRef(new Animated.Value(0)).current;
+  // Animație pentru amestecare (nivel advance)
+  const shuffleAnimation = useRef(new Animated.Value(0)).current;
+  const [isShuffling, setIsShuffling] = useState(false);
   
   // Generăm cardurile la începutul jocului sau când se schimbă nivelul
   useEffect(() => {
@@ -39,24 +40,34 @@ const GameBoard = () => {
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8];
     let shuffled = shuffleArray(values);
     
+    // Activăm perioada inițială de vizualizare pentru nivelurile easy și advance
+    setInitialViewPeriod(true);
+    setIsShuffling(false);
+    
+    // Creăm cărțile cu valorile inițiale
     const newCards = shuffled.map((value, index) => ({
       id: index,
       value,
-      isFlipped: difficulty === 'easy', // La nivelul easy, afișăm toate cărțile cu fața în sus inițial
+      // Doar pentru nivelul hard începem cu cărțile ascunse
+      isFlipped: difficulty !== 'hard',
       isMatched: false,
       position: getCardPosition(index),
+      // Adăugăm poziția inițială de grid
+      gridPos: index + 1, // Poziția 1-16 pe grid (pentru animație)
+      animated: false,
     }));
     
+    // Setăm imediat cărțile cu fața în sus
     setCards(newCards);
     
-    // Dacă suntem pe nivelul easy, întoarcem cărțile după timpul specific nivelului
+    // Pentru nivelul easy
     if (difficulty === 'easy') {
-      setInitialViewPeriod(true); // Activăm perioada de vizualizare
-      
       // Folosim timpul specific nivelului pentru perioada de vizualizare
       const viewTime = timePerCard * 1000; // Convertim din secunde în milisecunde
+      console.log(`Nivel easy ${level}: Timp de vizualizare ${timePerCard} secunde`);
       
       setTimeout(() => {
+        console.log("Easy: Întorc cărțile cu fața în jos");
         setCards(prevCards => 
           prevCards.map(card => ({
             ...card,
@@ -67,9 +78,39 @@ const GameBoard = () => {
       }, viewTime);
     }
     
-    // Pentru nivelurile avansate, realizăm și animație de amestecare
-    if (difficulty === 'advance' || difficulty === 'hard') {
-      performShuffleAnimation();
+    // Pentru nivelul advance
+    else if (difficulty === 'advance') {
+      console.log(`Nivel advance ${level}: Afișez cărțile cu fața în sus timp de 1.5 secunde`);
+      
+      // Forțăm un render pentru a ne asigura că cărțile sunt afișate cu fața în sus
+      setTimeout(() => {
+        console.log("Advance: Verificare status cărți - ar trebui să fie cu fața în sus");
+      }, 100);
+      
+      // După 1.5 secunde, întoarcem cărțile și începem amestecarea
+      setTimeout(() => {
+        console.log("Advance: Întorc cărțile cu fața în jos");
+        // Întoarcem toate cărțile cu fața în jos
+        setCards(prevCards => 
+          prevCards.map(card => ({
+            ...card,
+            isFlipped: false
+          }))
+        );
+        
+        // După o scurtă pauză, începem amestecarea
+        setTimeout(() => {
+          console.log("Advance: Pornesc amestecarea");
+          startCardShuffling();
+        }, 300); // 0.3 secunde pauză înainte de amestecare
+        
+      }, 1500); // 1.5 secunde pentru vizualizare
+    }
+    
+    // Pentru nivelul hard, pornim direct amestecarea fără a afișa cărțile
+    else if (difficulty === 'hard') {
+      console.log("Hard: Pornesc amestecarea directă");
+      startCardShuffling();
     }
   };
   
@@ -90,40 +131,9 @@ const GameBoard = () => {
     return { row, col };
   };
   
-  // Animație de amestecare pentru nivele avansate
-  const performShuffleAnimation = () => {
-    // Definim ordinea de amestecare în funcție de nivel
-    const shufflePairs = getShufflePairsForLevel(level);
-    
-    // Actualizăm pozițiile cărților în funcție de ordinea de amestecare
-    const updatedCards = [...cards];
-    shufflePairs.forEach(pair => {
-      const [from, to] = pair;
-      // Calculăm noile poziții
-      const fromPos = getCardPosition(from - 1); // Ajustăm pentru indexul 0
-      const toPos = getCardPosition(to - 1);   // Ajustăm pentru indexul 0
-      
-      // Actualizăm cărțile
-      if (updatedCards[from - 1] && updatedCards[to - 1]) {
-        updatedCards[from - 1].position = toPos;
-        updatedCards[to - 1].position = fromPos;
-      }
-    });
-    
-    setCards(updatedCards);
-    
-    // Animăm amestecarea
-    shuffleAnim.setValue(0);
-    Animated.timing(shuffleAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  };
-  
   // Întoarcem o carte când este apăsată
   const flipCard = (id) => {
-    if (isProcessing || flippedIndexes.length >= 2 || gameCompleted || initialViewPeriod) return;
+    if (isProcessing || flippedIndexes.length >= 2 || gameCompleted || initialViewPeriod || isShuffling) return;
     
     // Găsim indexul cărții în starea noastră
     const cardIndex = cards.findIndex(card => card.id === id);
@@ -243,6 +253,82 @@ const GameBoard = () => {
     return shuffleConfigs[level] || shuffleConfigs[1];
   };
   
+  // Funcție pentru animarea schimbului între două cărți
+  const animateCardSwap = (card1Pos, card2Pos) => {
+    // Găsim cardurile care trebuie animate (prin poziția lor pe grid 1-16)
+    setCards(prevCards => {
+      const updatedCards = [...prevCards];
+      
+      // Găsim indexurile cărților în array
+      const card1Index = updatedCards.findIndex(card => card.gridPos === card1Pos);
+      const card2Index = updatedCards.findIndex(card => card.gridPos === card2Pos);
+      
+      // Dacă am găsit ambele cărți, le schimbăm valorile
+      if (card1Index !== -1 && card2Index !== -1) {
+        // Marcăm cărțile pentru animație
+        updatedCards[card1Index] = {...updatedCards[card1Index], animated: true, swapTo: card2Pos};
+        updatedCards[card2Index] = {...updatedCards[card2Index], animated: true, swapTo: card1Pos};
+        
+        // După 300ms, finalizăm schimbul valorilor și resetăm starea animației
+        setTimeout(() => {
+          setCards(prevCards => {
+            const finalCards = [...prevCards];
+            
+            // Găsim din nou indexurile (ar trebui să fie aceleași)
+            const idx1 = finalCards.findIndex(card => card.gridPos === card1Pos);
+            const idx2 = finalCards.findIndex(card => card.gridPos === card2Pos);
+            
+            if (idx1 !== -1 && idx2 !== -1) {
+              // Schimbăm valorile
+              const tempValue = finalCards[idx1].value;
+              finalCards[idx1].value = finalCards[idx2].value;
+              finalCards[idx2].value = tempValue;
+              
+              // Resetăm starea animației
+              finalCards[idx1].animated = false;
+              finalCards[idx2].animated = false;
+              delete finalCards[idx1].swapTo;
+              delete finalCards[idx2].swapTo;
+            }
+            
+            return finalCards;
+          });
+        }, 800);
+      }
+      
+      return updatedCards;
+    });
+  };
+  
+  // Funcție pentru pornirea animației de amestecare
+  const startCardShuffling = () => {
+    setIsShuffling(true);
+    
+    // Obținem configurația de amestecare pentru nivelul curent
+    const shufflePairs = getShufflePairsForLevel(level);
+    console.log(`Nivel ${level} (${difficulty}): Folosesc configurația de amestecare specifică nivelului`);
+    
+    // Definim durata totală a animației și delay între perechi
+    const totalDuration = 3000; // 3 secunde în total
+    const pairDelay = 300; // 300ms între fiecare pereche
+    
+    // Pornim animația de amestecare cu un timer 
+    // pentru fiecare pereche de cărți, în secvență
+    shufflePairs.forEach((pair, pairIndex) => {
+      setTimeout(() => {
+        // Animăm schimbul între 2 cărți
+        console.log(`Animez schimbul: ${pair[0]} <-> ${pair[1]}`);
+        animateCardSwap(pair[0], pair[1]);
+      }, pairIndex * pairDelay);
+    });
+    
+    // După ce toate animațiile sunt terminate, deblocăm interacțiunea
+    setTimeout(() => {
+      setIsShuffling(false);
+      setInitialViewPeriod(false);
+    }, totalDuration);
+  };
+  
   return (
     <View style={styles.container}>
       <ScrollView 
@@ -260,7 +346,9 @@ const GameBoard = () => {
                 isMatched={card.isMatched}
                 onPress={flipCard}
                 position={card.position}
-                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+                gridPos={card.gridPos}
+                animated={card.animated}
+                swapTo={card.swapTo}
               />
             ))}
           </View>
@@ -274,7 +362,9 @@ const GameBoard = () => {
                 isMatched={card.isMatched}
                 onPress={flipCard}
                 position={card.position}
-                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+                gridPos={card.gridPos}
+                animated={card.animated}
+                swapTo={card.swapTo}
               />
             ))}
           </View>
@@ -288,7 +378,9 @@ const GameBoard = () => {
                 isMatched={card.isMatched}
                 onPress={flipCard}
                 position={card.position}
-                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+                gridPos={card.gridPos}
+                animated={card.animated}
+                swapTo={card.swapTo}
               />
             ))}
           </View>
@@ -302,7 +394,9 @@ const GameBoard = () => {
                 isMatched={card.isMatched}
                 onPress={flipCard}
                 position={card.position}
-                shuffleAnimation={difficulty !== 'easy' ? shuffleAnim : null}
+                gridPos={card.gridPos}
+                animated={card.animated}
+                swapTo={card.swapTo}
               />
             ))}
           </View>

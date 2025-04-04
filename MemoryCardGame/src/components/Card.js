@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet, Pressable, View, Text, Dimensions, Animated } from 'react-native';
 import { useGame } from '../context/GameContext';
 
@@ -11,9 +11,41 @@ const { width, height } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.22; // Aproximativ 1/4 din lățimea ecranului minus margini
 const CARD_HEIGHT = CARD_WIDTH * 1.3; // Păstrăm raportul de aspect
 
-const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnimation }) => {
+// Funcție helper pentru a găsi poziția pe grid (row, col) pentru un număr de poziție (1-16)
+const getPositionFromGridNumber = (gridPos) => {
+  const pos = gridPos - 1; // Convertim de la 1-based la 0-based
+  const row = Math.floor(pos / 4);
+  const col = pos % 4;
+  return { row, col };
+};
+
+// Calculăm coordonatele x,y pentru o poziție pe grid
+const getCoordinatesForPosition = (gridPos) => {
+  const { row, col } = getPositionFromGridNumber(gridPos);
+  // Calculăm coordonatele absolute
+  const x = col * (CARD_WIDTH + 6); // 6 = marja totală între cărți
+  const y = row * (CARD_HEIGHT + 6);
+  return { x, y };
+};
+
+const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo }) => {
   const { difficulty } = useGame();
   const flipAnimation = new Animated.Value(isFlipped ? 1 : 0);
+  
+  // Animație pentru swapping
+  const swapAnimation = useRef(new Animated.Value(0)).current;
+  
+  // Resetăm animația de swap când se schimbă starea animated
+  useEffect(() => {
+    if (animated) {
+      swapAnimation.setValue(0);
+      Animated.timing(swapAnimation, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true
+      }).start();
+    }
+  }, [animated, swapTo]);
   
   // Animație de flip
   useEffect(() => {
@@ -62,46 +94,77 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, shuffleAnima
     ? [styles.card, styles.matchedCard] 
     : styles.card;
   
-  // Calculăm transformările pentru animație sau folosim valori statice
-  let cardTransform = [];
+  // Stiluri pentru animația de schimb între poziții
+  let containerStyle = [styles.container];
   
-  if (position && shuffleAnimation) {
-    // Animație pentru poziții când există shuffleAnimation
-    const translateX = shuffleAnimation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, position.x || 0],
+  if (animated && swapTo) {
+    // Calculăm coordonatele pentru poziția actuală și cea țintă
+    const currentPos = getCoordinatesForPosition(gridPos);
+    const targetPos = getCoordinatesForPosition(swapTo);
+    
+    // Calculăm diferența pentru a anima
+    const deltaX = targetPos.x - currentPos.x;
+    const deltaY = targetPos.y - currentPos.y;
+    
+    // Interpolăm mișcarea
+    const translateX = swapAnimation.interpolate({
+      inputRange: [0, 0.4, 0.6, 1],
+      outputRange: [0, deltaX, deltaX, 0], // Mișcă la target apoi înapoi
     });
     
-    const translateY = shuffleAnimation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, position.y || 0],
+    const translateY = swapAnimation.interpolate({
+      inputRange: [0, 0.4, 0.6, 1],
+      outputRange: [0, deltaY, deltaY, 0], // Mișcă la target apoi înapoi
     });
     
-    cardTransform = [
-      { translateX },
-      { translateY }
-    ];
+    // Adăugăm și scalare pentru efect vizual
+    const scale = swapAnimation.interpolate({
+      inputRange: [0, 0.2, 0.8, 1],
+      outputRange: [1, 1.2, 1.2, 1],
+    });
+    
+    // Adăugăm rotație pentru un efect mai realist
+    const rotate = swapAnimation.interpolate({
+      inputRange: [0, 0.5, 1],
+      outputRange: ['0deg', `${gridPos % 2 === 0 ? 180 : -180}deg`, '0deg'],
+    });
+    
+    // Adăugăm elevație pentru efect 3D
+    const elevation = swapAnimation.interpolate({
+      inputRange: [0, 0.5, 1],
+      outputRange: [1, 10, 1],
+    });
+    
+    containerStyle.push({
+      transform: [
+        { translateX },
+        { translateY },
+        { scale },
+        { rotate }
+      ],
+      elevation,
+      zIndex: 100, // Asigurăm că cartea animată este deasupra celorlalte
+    });
   }
   
   return (
-    <Pressable
-      style={[
-        styles.container,
-        cardTransform.length > 0 ? { transform: cardTransform } : {}
-      ]}
-      onPress={() => !isFlipped && !isMatched && onPress(id)}
-      disabled={isFlipped || isMatched}
-    >
-      {/* Partea din față (valoarea cardului) */}
-      <Animated.View style={[cardStyle, frontAnimatedStyle, styles.cardFace]}>
-        <Text style={styles.cardText}>{value}</Text>
-      </Animated.View>
-      
-      {/* Partea din spate (spatele cardului) */}
-      <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, styles.cardFace]}>
-        <Text style={styles.cardBackText}>?</Text>
-      </Animated.View>
-    </Pressable>
+    <Animated.View style={containerStyle}>
+      <Pressable
+        style={styles.cardContainer}
+        onPress={() => !isFlipped && !isMatched && onPress(id)}
+        disabled={isFlipped || isMatched}
+      >
+        {/* Partea din față (valoarea cardului) */}
+        <Animated.View style={[cardStyle, frontAnimatedStyle, styles.cardFace]}>
+          <Text style={styles.cardText}>{value}</Text>
+        </Animated.View>
+        
+        {/* Partea din spate (spatele cardului) */}
+        <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, styles.cardFace]}>
+          <Text style={styles.cardBackText}>?</Text>
+        </Animated.View>
+      </Pressable>
+    </Animated.View>
   );
 };
 
@@ -110,10 +173,11 @@ const styles = StyleSheet.create({
     width: CARD_WIDTH,
     height: CARD_HEIGHT,
     margin: 3,
-    // Folosim o abordare flexibilă pentru lățime
-    flex: 0, // Dezactivăm flex pentru a folosi dimensiuni fixe
-    maxWidth: CARD_WIDTH,
-    perspective: 1000, // Adăugăm perspectivă pentru efect 3D mai bun
+    perspective: 1000,
+  },
+  cardContainer: {
+    width: '100%',
+    height: '100%',
   },
   cardFace: {
     position: 'absolute',
