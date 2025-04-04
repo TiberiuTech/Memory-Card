@@ -51,8 +51,8 @@ const GameBoard = () => {
     let newCards = shuffled.map((value, index) => ({
       id: index,
       value,
-      // Pentru nivelurile easy și advance, afișăm cărțile cu fața în sus inițial
-      isFlipped: difficulty !== 'hard',
+      // Pentru toate nivelurile afișăm cărțile cu fața în sus inițial (inclusiv hard)
+      isFlipped: true,
       isMatched: false,
       position: getCardPosition(index),
       // Adăugăm poziția inițială de grid
@@ -118,10 +118,17 @@ const GameBoard = () => {
       }, viewTime); // 1.5 secunde exact
     }
     
-    // Pentru nivelul hard, pornim direct amestecarea fără a afișa cărțile
+    // Pentru nivelul hard, implementăm animația specială
     else if (difficulty === 'hard') {
-      console.log("Hard: Pornesc amestecarea directă");
-      startCardShuffling();
+      // Afișăm cărțile cu fața în sus pentru 3.5 secunde
+      const viewTime = 3500; // 3.5 secunde
+      console.log(`Nivel hard ${level}: Afișez cărțile timp de ${viewTime/1000} secunde`);
+      
+      setTimeout(() => {
+        console.log("Hard: Începe animația de distribuire");
+        // Începem animația de distribuire a cărților
+        startCardDistribution();
+      }, viewTime);
     }
   };
   
@@ -351,6 +358,112 @@ const GameBoard = () => {
       setIsShuffling(false);
       setInitialViewPeriod(false);
     }, totalDuration);
+  };
+  
+  // Funcție pentru animația specială de distribuire pentru nivelul hard
+  const startCardDistribution = () => {
+    console.log("Începe procesul de distribuire a cărților pentru nivelul hard");
+    setIsShuffling(true);
+    
+    // Asigurăm-ne că valorile cărților sunt unice în ordinea distribuirii
+    // Vom crea o nouă ordine a valorilor, asigurând că nu avem două valori identice consecutive
+    let remainingValues = [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8];
+    remainingValues = shuffleArray(remainingValues);
+    
+    // Verificăm să nu avem valori identice consecutive
+    for (let i = 1; i < remainingValues.length; i++) {
+      if (remainingValues[i] === remainingValues[i-1]) {
+        // Găsim o poziție diferită și facem schimb
+        for (let j = i + 1; j < remainingValues.length; j++) {
+          if (remainingValues[j] !== remainingValues[i]) {
+            // Facem schimb
+            [remainingValues[i], remainingValues[j]] = [remainingValues[j], remainingValues[i]];
+            break;
+          }
+        }
+      }
+    }
+    
+    // Durata totală a animației de distribuire
+    const distributionDelay = 300; // 300ms între fiecare distribuire
+    
+    // Întoarcem toate cărțile cu fața în jos inițial
+    setCards(prevCards => 
+      prevCards.map(card => ({
+        ...card,
+        isFlipped: false,
+        // Le punem pe toate în stivă la început
+        isStack: true,
+        stackPosition: 1 // Poziția inițială a stivei
+      }))
+    );
+    
+    // Simulăm "stivă" de cărți care se mută de la o poziție la alta
+    // și apoi lasă o carte în fiecare poziție
+    for (let position = 1; position <= 16; position++) {
+      setTimeout(() => {
+        // Mutăm stiva la poziția curentă
+        setCards(prevCards => {
+          const updatedCards = [...prevCards];
+          
+          // Toate cărțile care încă sunt în stivă se mută la poziția curentă
+          updatedCards.forEach((card, index) => {
+            if (card.isStack) {
+              updatedCards[index].stackPosition = position;
+            }
+          });
+          
+          // Găsim cartea la poziția curentă pentru a o scoate din stivă
+          const cardIndex = updatedCards.findIndex(card => card.gridPos === position);
+          
+          if (cardIndex !== -1) {
+            // Asigurăm-ne că valorile sunt distribuite corect
+            updatedCards[cardIndex].value = remainingValues[position - 1];
+            
+            // Scoatem cartea din stivă și o animăm pentru distribuire
+            updatedCards[cardIndex].isStack = false;
+            updatedCards[cardIndex].animated = true;
+            
+            // După un delay, întoarcem cartea cu fața în sus
+            setTimeout(() => {
+              setCards(prevState => {
+                const newState = [...prevState];
+                const idx = newState.findIndex(card => card.gridPos === position);
+                if (idx !== -1) {
+                  newState[idx].isFlipped = true;
+                  newState[idx].animated = false;
+                }
+                return newState;
+              });
+            }, 200);
+          }
+          
+          return updatedCards;
+        });
+      }, position * distributionDelay);
+    }
+    
+    // După ce toate cărțile au fost distribuite, așteptăm puțin și pornim amestecarea
+    const totalDistributionTime = 16 * distributionDelay + 1500; // Timpul total pentru distribuire + pauză
+    
+    setTimeout(() => {
+      // Întoarcem toate cărțile cu fața în jos
+      setCards(prevCards => 
+        prevCards.map(card => ({
+          ...card,
+          isFlipped: false,
+          animated: false,
+          isStack: false // Eliminăm starea de stivă
+        }))
+      );
+      
+      // După o scurtă pauză, începem amestecarea
+      setTimeout(() => {
+        console.log("Hard: Pornesc amestecarea finală");
+        startCardShuffling();
+      }, 500);
+      
+    }, totalDistributionTime);
   };
   
   return (

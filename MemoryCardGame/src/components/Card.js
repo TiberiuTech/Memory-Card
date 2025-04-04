@@ -28,20 +28,44 @@ const getCoordinatesForPosition = (gridPos) => {
   return { x, y };
 };
 
-const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo }) => {
+// Helper pentru animația de stivă în nivelul hard
+const getStackCoordinates = (gridPos) => {
+  // Pentru animația de stivă, toate cărțile vor fi inițial pe prima poziție
+  const { row, col } = getPositionFromGridNumber(1);
+  const x = col * (CARD_WIDTH + 6);
+  const y = row * (CARD_HEIGHT + 6);
+  return { x, y };
+};
+
+const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo, isStack, stackPosition }) => {
   const { difficulty } = useGame();
   
   // Log pentru debug
   useEffect(() => {
-    if (difficulty === 'advance') {
-      console.log(`Card ${id} (value ${value}): isFlipped=${isFlipped}, isMatched=${isMatched}`);
+    if (difficulty === 'hard' && isStack) {
+      console.log(`Card ${id} (valoare ${value}): în stivă la poziția ${stackPosition}`);
     }
-  }, [isFlipped, isMatched, difficulty, id, value]);
+  }, [isStack, stackPosition, difficulty, id, value]);
   
   const flipAnimation = new Animated.Value(isFlipped ? 1 : 0);
   
   // Animație pentru swapping
   const swapAnimation = useRef(new Animated.Value(0)).current;
+  
+  // Animație pentru distribuirea cărților în nivelul hard
+  const stackAnimation = useRef(new Animated.Value(0)).current;
+  
+  // Resetăm animația de stack când se activează
+  useEffect(() => {
+    if (isStack) {
+      stackAnimation.setValue(0);
+      Animated.timing(stackAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      }).start();
+    }
+  }, [isStack, stackPosition]);
   
   // Resetăm animația de swap când se schimbă starea animated
   useEffect(() => {
@@ -155,12 +179,31 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     });
   }
   
+  // Adăugăm stiluri pentru animația de stivă
+  if (isStack && stackPosition) {
+    // Calculăm coordonatele pentru poziția de stivă
+    const currentPos = getCoordinatesForPosition(gridPos);
+    const targetPos = getCoordinatesForPosition(stackPosition);
+    
+    // Adăugăm stiluri de stivă
+    containerStyle.push({
+      position: 'absolute',
+      left: targetPos.x,
+      top: targetPos.y,
+      zIndex: 200 + id, // Asigurăm că cărțile sunt stivuite în ordine
+      transform: [
+        { scale: 1 + (id * 0.01) }, // Ușor mai mare pentru efect de stivă
+        { translateY: id * -0.5 }, // Decalaj vertical pentru efect de stivă
+      ]
+    });
+  }
+  
   return (
     <Animated.View style={containerStyle}>
       <Pressable
         style={styles.cardContainer}
         onPress={() => !isFlipped && !isMatched && onPress(id)}
-        disabled={isFlipped || isMatched}
+        disabled={isFlipped || isMatched || isStack}
       >
         {/* Partea din față (valoarea cardului) */}
         <Animated.View style={[cardStyle, frontAnimatedStyle, styles.cardFace]}>

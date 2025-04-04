@@ -142,7 +142,7 @@ export const GameProvider = ({ children }) => {
     switch (gameState.difficulty) {
       case 'easy': return 2;  // 2 monede per pereche
       case 'advance': return 5;  // 5 monede per pereche
-      case 'hard': return 15;  // 15 monede per pereche
+      case 'hard': return 15;  // 15 monede per pereche (specificat în cerință)
       default: return 1;
     }
   };

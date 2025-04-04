@@ -169,12 +169,13 @@ lv 10- 1.3 secunde
 
 #Hard -> monedele adica banii per pereche intoarsa la lv easy este de 15 monede per pereche descoperita 
 
-acest nivel va avea 3 vieti la fiecare pereche neoptrivita va scadea o jumatate de viata timp cat cartile vor fi cu fata la fiecare nivel 3.5 secunde
 
--cardurile nu se vor arata vor fi cu spatele si vor fi puse una peste alta in ordinea
-1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16
+cartile se vor intoarce intoarce cu fata la incepul nivelul 3.5
 
-Ajuns pe pozitia 16 cardurile se vor aseza pe centru si dupa toate la un loc se vor pune pe pozitile
+dupa
+
+vreau ca cartile sa se suprapuna cu o animatie pozitie 1-2-3 si tot asa pana la pozitia 16 la pozitia 16 sa vina tot pachetul de carti pe pozia 1 si sa lase o carte cu fata trece tot packetul pe poztia 2 cand a ajuns pe pozitia 2 lasa o carte cu spatele se va intoasrce cu fata ( cartile nu au voie sa ie indentice in acest proces)pachetul trece de poztia 2 si ajunge pe 3 si tot asa, dupa aceeia cartile se vor amesteca cum se amesteca la nivelul advance
+
 
 1-2-3-4-5-6-7-8-9-10-11-12-13-14-15-16
 
