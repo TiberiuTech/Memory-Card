@@ -30,6 +30,14 @@ const getCoordinatesForPosition = (gridPos) => {
 
 const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo }) => {
   const { difficulty } = useGame();
+  
+  // Log pentru debug
+  useEffect(() => {
+    if (difficulty === 'advance') {
+      console.log(`Card ${id} (value ${value}): isFlipped=${isFlipped}, isMatched=${isMatched}`);
+    }
+  }, [isFlipped, isMatched, difficulty, id, value]);
+  
   const flipAnimation = new Animated.Value(isFlipped ? 1 : 0);
   
   // Animație pentru swapping
@@ -47,13 +55,13 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     }
   }, [animated, swapTo]);
   
-  // Animație de flip
+  // Accelerăm animația pentru a evita probleme de timing
   useEffect(() => {
     Animated.timing(flipAnimation, {
       toValue: isFlipped ? 1 : 0,
-      duration: 350, // Crescută de la 250ms la 350ms pentru animație mai vizibilă
+      duration: 150, // Redusă de la 350ms la 150ms pentru animație mai rapidă
       useNativeDriver: true,
-      delay: isFlipped ? 100 : 0, // Adăugăm o mică întârziere când întoarcem cartea
+      delay: 0, // Eliminăm delay-ul
     }).start();
   }, [isFlipped]);
   

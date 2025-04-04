@@ -40,15 +40,18 @@ const GameBoard = () => {
     const values = [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8];
     let shuffled = shuffleArray(values);
     
-    // Activăm perioada inițială de vizualizare pentru nivelurile easy și advance
+    // Resetăm toate stările la început
     setInitialViewPeriod(true);
     setIsShuffling(false);
+    setFlippedIndexes([]);
+    
+    console.log(`Generez cărți noi pentru nivel ${level} (${difficulty})`);
     
     // Creăm cărțile cu valorile inițiale
-    const newCards = shuffled.map((value, index) => ({
+    let newCards = shuffled.map((value, index) => ({
       id: index,
       value,
-      // Doar pentru nivelul hard începem cu cărțile ascunse
+      // Pentru nivelurile easy și advance, afișăm cărțile cu fața în sus inițial
       isFlipped: difficulty !== 'hard',
       isMatched: false,
       position: getCardPosition(index),
@@ -57,8 +60,13 @@ const GameBoard = () => {
       animated: false,
     }));
     
-    // Setăm imediat cărțile cu fața în sus
+    // Setăm imediat cărțile
     setCards(newCards);
+    
+    // Verificăm starea cărților după 100ms
+    setTimeout(() => {
+      console.log(`Verificare după 100ms: Cards[0].isFlipped = ${newCards[0].isFlipped}`);
+    }, 100);
     
     // Pentru nivelul easy
     if (difficulty === 'easy') {
@@ -66,6 +74,7 @@ const GameBoard = () => {
       const viewTime = timePerCard * 1000; // Convertim din secunde în milisecunde
       console.log(`Nivel easy ${level}: Timp de vizualizare ${timePerCard} secunde`);
       
+      // După timpul de vizualizare, întoarcem cărțile cu fața în jos
       setTimeout(() => {
         console.log("Easy: Întorc cărțile cu fața în jos");
         setCards(prevCards => 
@@ -80,31 +89,33 @@ const GameBoard = () => {
     
     // Pentru nivelul advance
     else if (difficulty === 'advance') {
-      console.log(`Nivel advance ${level}: Afișez cărțile cu fața în sus timp de 1.5 secunde`);
+      // Fix 1.5 secunde pentru vizualizare
+      const viewTime = 1500; 
+      console.log(`Nivel advance ${level}: Afișez cărțile timp de ${viewTime/1000} secunde`);
       
-      // Forțăm un render pentru a ne asigura că cărțile sunt afișate cu fața în sus
-      setTimeout(() => {
-        console.log("Advance: Verificare status cărți - ar trebui să fie cu fața în sus");
-      }, 100);
+      // Verificăm starea cărților și starea initialViewPeriod
+      console.log(`Initial view period este: ${initialViewPeriod}`);
       
-      // După 1.5 secunde, întoarcem cărțile și începem amestecarea
+      // După timpul de vizualizare, întoarcem cărțile și începem amestecarea
       setTimeout(() => {
-        console.log("Advance: Întorc cărțile cu fața în jos");
+        console.log("Advance: Întorc cărțile cu fața în jos acum");
         // Întoarcem toate cărțile cu fața în jos
-        setCards(prevCards => 
-          prevCards.map(card => ({
+        setCards(prevCards => {
+          const updatedCards = prevCards.map(card => ({
             ...card,
             isFlipped: false
-          }))
-        );
+          }));
+          console.log(`Card[0] după flip: isFlipped=${updatedCards[0].isFlipped}`);
+          return updatedCards;
+        });
         
         // După o scurtă pauză, începem amestecarea
         setTimeout(() => {
           console.log("Advance: Pornesc amestecarea");
           startCardShuffling();
-        }, 300); // 0.3 secunde pauză înainte de amestecare
+        }, 300);
         
-      }, 1500); // 1.5 secunde pentru vizualizare
+      }, viewTime); // 1.5 secunde exact
     }
     
     // Pentru nivelul hard, pornim direct amestecarea fără a afișa cărțile
@@ -133,7 +144,11 @@ const GameBoard = () => {
   
   // Întoarcem o carte când este apăsată
   const flipCard = (id) => {
-    if (isProcessing || flippedIndexes.length >= 2 || gameCompleted || initialViewPeriod || isShuffling) return;
+    // Verificăm dacă putem întoarce cărți în acest moment
+    if (isProcessing || flippedIndexes.length >= 2 || gameCompleted || initialViewPeriod || isShuffling) {
+      console.log(`Nu pot întoarce cartea - Processing: ${isProcessing}, Flipped: ${flippedIndexes.length}, Completed: ${gameCompleted}, InitialView: ${initialViewPeriod}, Shuffling: ${isShuffling}`);
+      return;
+    }
     
     // Găsim indexul cărții în starea noastră
     const cardIndex = cards.findIndex(card => card.id === id);
@@ -143,6 +158,7 @@ const GameBoard = () => {
     const newCards = [...cards];
     newCards[cardIndex].isFlipped = true;
     setCards(newCards);
+    console.log(`Întorc cartea ${id} (value: ${cards[cardIndex].value})`);
     
     // Adăugăm la array-ul de cărți întoarse
     setFlippedIndexes([...flippedIndexes, cardIndex]);
@@ -161,6 +177,7 @@ const GameBoard = () => {
           matchedCards[firstCardIndex].isMatched = true;
           matchedCards[cardIndex].isMatched = true;
           setCards(matchedCards);
+          console.log(`Pereche găsită! Valoarea: ${matchedCards[firstCardIndex].value}`);
           
           // Actualizăm perechile potrivite și resetăm indexurile întoarse
           setMatchedPairs([...matchedPairs, matchedCards[firstCardIndex].value]);
@@ -175,7 +192,11 @@ const GameBoard = () => {
         }, 1000);
       } else {
         // Nu s-au potrivit, întoarcem cărțile la loc
+        console.log(`Perechea nu s-a potrivit. Card1: ${newCards[firstCardIndex].value}, Card2: ${newCards[cardIndex].value}`);
+        console.log(`Păstrez cărțile vizibile timp de 1.5 secunde`);
+        
         setTimeout(() => {
+          console.log("Întorc cărțile nepotrivite cu fața în jos");
           const resetCards = [...newCards];
           resetCards[firstCardIndex].isFlipped = false;
           resetCards[cardIndex].isFlipped = false;
@@ -185,9 +206,10 @@ const GameBoard = () => {
           
           // În modul hard, pierdem jumătate de viață
           if (difficulty === 'hard') {
+            console.log("Hard mode: -0.5 vieți");
             updateLives(-0.5);
           }
-        }, 1500); // Fix la 1.5 secunde (1.5 secunde per carte)
+        }, 1500); // Fix la 1.5 secunde
       }
     }
   };
@@ -302,6 +324,7 @@ const GameBoard = () => {
   
   // Funcție pentru pornirea animației de amestecare
   const startCardShuffling = () => {
+    console.log("Începe procesul de amestecare a cărților");
     setIsShuffling(true);
     
     // Obținem configurația de amestecare pentru nivelul curent
@@ -317,13 +340,14 @@ const GameBoard = () => {
     shufflePairs.forEach((pair, pairIndex) => {
       setTimeout(() => {
         // Animăm schimbul între 2 cărți
-        console.log(`Animez schimbul: ${pair[0]} <-> ${pair[1]}`);
+        console.log(`Animez schimbul #${pairIndex+1}: ${pair[0]} <-> ${pair[1]}`);
         animateCardSwap(pair[0], pair[1]);
       }, pairIndex * pairDelay);
     });
     
     // După ce toate animațiile sunt terminate, deblocăm interacțiunea
     setTimeout(() => {
+      console.log("Amestecarea s-a terminat - jocul poate începe");
       setIsShuffling(false);
       setInitialViewPeriod(false);
     }, totalDuration);
