@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Pressable, View, Text, Dimensions, Animated } from 'react-native';
+import { StyleSheet, Pressable, View, Text, Dimensions, Animated, Image } from 'react-native';
 import { useGame } from '../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
@@ -36,6 +36,9 @@ const getStackCoordinates = (gridPos) => {
   const y = row * (CARD_HEIGHT + 6);
   return { x, y };
 };
+
+// Importăm imaginea de pe spatele cărților
+const cardBackImage = require('../assets/images/card.png'); // Înlocuiește cu numele fișierului tău
 
 const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo, isStack, stackPosition }) => {
   const { difficulty } = useGame();
@@ -212,7 +215,7 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
         
         {/* Partea din spate (spatele cardului) */}
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, styles.cardFace]}>
-          <Text style={styles.cardBackText}>?</Text>
+          <Image source={cardBackImage} style={styles.cardBackImage} resizeMode="cover" />
         </Animated.View>
       </Pressable>
     </Animated.View>
@@ -261,10 +264,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  cardBackText: {
-    fontSize: Math.max(CARD_WIDTH * 0.45, 14),
-    fontWeight: 'bold',
-    color: '#fff',
+  cardBackImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 6,
   },
 });
 
