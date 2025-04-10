@@ -16,11 +16,14 @@ const AppNavigator = () => {
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: '#fff' }
+          cardStyle: { backgroundColor: '#fff' }, // Revenit la fundal alb
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen name="Game" component={GameScreen} />
+        <Stack.Screen 
+          name="Game" 
+          component={GameScreen} 
+        />
         <Stack.Screen name="Shop" component={ShopScreen} />
       </Stack.Navigator>
     </NavigationContainer>

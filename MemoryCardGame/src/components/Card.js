@@ -40,6 +40,18 @@ const getStackCoordinates = (gridPos) => {
 // Importăm imaginea de pe spatele cărților
 const cardBackImage = require('../assets/images/card.png'); // Înlocuiește cu numele fișierului tău
 
+// Înlocuim imaginea de pe fața cardului cu imaginea de înghețată
+const iceCreamImages = [
+  require('../assets/images/IceCreamBlue.png'),   //1
+  require('../assets/images/IceCreamGreen.png'),  //2
+  require('../assets/images/IceCreamOrange.png'), //3
+  require('../assets/images/IceCreamPurple.png'), //4
+  require('../assets/images/IceCreamRed.png'),    //5
+  require('../assets/images/IceCreamWhite.png'),  //6
+  require('../assets/images/IceCreamYellow.png'), //7
+  require('../assets/images/IceCreamPink.png'),
+];
+
 const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo, isStack, stackPosition }) => {
   const { difficulty } = useGame();
   
@@ -210,7 +222,7 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
       >
         {/* Partea din față (valoarea cardului) */}
         <Animated.View style={[cardStyle, frontAnimatedStyle, styles.cardFace]}>
-          <Text style={styles.cardText}>{value}</Text>
+          <Image source={iceCreamImages[value - 1]} style={styles.cardBackImage} resizeMode="cover" />
         </Animated.View>
         
         {/* Partea din spate (spatele cardului) */}
@@ -257,7 +269,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#5c6bc0',
   },
   matchedCard: {
-    backgroundColor: '#81c784',
+    // Eliminăm efectul de colorare verde
   },
   cardText: {
     fontSize: Math.max(CARD_WIDTH * 0.45, 14), // Asigurăm o dimensiune lizibilă
