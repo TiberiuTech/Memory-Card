@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Pressable, View, Text, Dimensions, Animated, Image } from 'react-native';
+import { StyleSheet, Pressable, View, Text, Dimensions, Animated, Image, Easing } from 'react-native';
 import { useGame } from '../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
@@ -8,8 +8,8 @@ const { width, height } = Dimensions.get('window');
 // Vrem 4 carduri pe lățime, deci împărțim lățimea la 4 și reducem puțin pentru marje
 
 // Calculăm dimensiunea cardului pentru modul portrait
-const CARD_WIDTH = width * 0.22; // Aproximativ 1/4 din lățimea ecranului minus margini
-const CARD_HEIGHT = CARD_WIDTH * 1.3; // Păstrăm raportul de aspect
+const CARD_WIDTH = width * 0.22; // Revenim la lățimea originală
+const CARD_HEIGHT = CARD_WIDTH * 1.5; // Mărim raportul de aspect pentru carduri mai înalte
 
 // Funcție helper pentru a găsi poziția pe grid (row, col) pentru un număr de poziție (1-16)
 const getPositionFromGridNumber = (gridPos) => {
@@ -38,7 +38,7 @@ const getStackCoordinates = (gridPos) => {
 };
 
 // Importăm imaginea de pe spatele cărților
-const cardBackImage = require('../assets/images/card.png'); // Înlocuiește cu numele fișierului tău
+const cardBackImage = require('../assets/images/Pug.png'); // Înlocuiește cu numele fișierului tău
 
 // Înlocuim imaginea de pe fața cardului cu imaginea de înghețată
 const iceCreamImages = [
@@ -49,7 +49,7 @@ const iceCreamImages = [
   require('../assets/images/IceCreamRed.png'),    //5
   require('../assets/images/IceCreamWhite.png'),  //6
   require('../assets/images/IceCreamYellow.png'), //7
-  require('../assets/images/IceCreamPink.png'),
+  require('../assets/images/IceCreamPink.png'),   //8
 ];
 
 const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo, isStack, stackPosition }) => {
@@ -98,7 +98,8 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
   useEffect(() => {
     Animated.timing(flipAnimation, {
       toValue: isFlipped ? 1 : 0,
-      duration: 150, // Redusă de la 350ms la 150ms pentru animație mai rapidă
+      duration: 600, // Am crescut durata pentru o animație mai complexă
+      easing: Easing.bounce, // Adăugăm un efect de bounce
       useNativeDriver: true,
       delay: 0, // Eliminăm delay-ul
     }).start();
@@ -126,13 +127,24 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     outputRange: [1, 0, 0],
   });
   
+  // Adăugăm efecte suplimentare de scalare și opacitate
+  const scale = flipAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1.2, 1],
+  });
+  
+  const rotate = flipAnimation.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['0deg', '360deg', '0deg'],
+  });
+  
   const frontAnimatedStyle = {
-    transform: [{ rotateY: frontInterpolate }],
+    transform: [{ rotateY: frontInterpolate }, { scale }, { rotate }],
     opacity: frontOpacity,
   };
   
   const backAnimatedStyle = {
-    transform: [{ rotateY: backInterpolate }],
+    transform: [{ rotateY: backInterpolate }, { scale }, { rotate }],
     opacity: backOpacity,
   };
   
