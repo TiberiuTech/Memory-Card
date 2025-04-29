@@ -5,19 +5,18 @@ export const GameContext = createContext();
 
 const INITIAL_STATE = {
   level: 1,
-  difficulty: 'easy', // 'easy', 'advance', 'hard'
+  difficulty: 'easy',
   coins: 0,
   unlockedCards: [],
   selectedCards: [],
   currentScore: 0,
   lives: 3,
-  timePerCard: 1.5, // Modificat la 1.5 secunde pentru modul ușor inițial
+  timePerCard: 1.5,
 };
 
 export const GameProvider = ({ children }) => {
   const [gameState, setGameState] = useState(INITIAL_STATE);
   
-  // Inițializăm datele jocului din stocare persistentă
   useEffect(() => {
     const loadGameState = async () => {
       try {
@@ -33,7 +32,6 @@ export const GameProvider = ({ children }) => {
     loadGameState();
   }, []);
   
-  // Salvăm datele jocului la modificări
   useEffect(() => {
     const saveGameState = async () => {
       try {
@@ -46,11 +44,9 @@ export const GameProvider = ({ children }) => {
     saveGameState();
   }, [gameState]);
   
-  // Funcții pentru actualizarea stării jocului
   const updateLevel = (newLevel) => {
     setGameState(prev => ({ ...prev, level: newLevel }));
     
-    // Actualizăm timpul per carte în funcție de nivel și dificultate
     let timePerCard;
     
     if (gameState.difficulty === 'easy') {
@@ -58,7 +54,7 @@ export const GameProvider = ({ children }) => {
     } else if (gameState.difficulty === 'advance') {
       timePerCard = getTimeForAdvanceLevel(newLevel);
     } else if (gameState.difficulty === 'hard') {
-      timePerCard = 3.5; // Timp fix pentru hard
+      timePerCard = 3.5;
     }
     
     setGameState(prev => ({ ...prev, timePerCard }));
@@ -66,7 +62,6 @@ export const GameProvider = ({ children }) => {
   
   const updateDifficulty = (newDifficulty) => {
     setGameState(prev => ({ ...prev, difficulty: newDifficulty }));
-    // Resetăm nivelul la schimbarea dificultății
     updateLevel(1);
   };
   
@@ -102,9 +97,7 @@ export const GameProvider = ({ children }) => {
     setGameState(INITIAL_STATE);
   };
   
-  // Funcții helper pentru calcularea timpului în funcție de nivel
   const getTimeForEasyLevel = (level) => {
-    // Implementăm timpii specifici pentru fiecare nivel în modul easy
     switch (level) {
       case 1: return 4.0;
       case 2: return 3.8;
@@ -121,7 +114,6 @@ export const GameProvider = ({ children }) => {
   };
   
   const getTimeForAdvanceLevel = (level) => {
-    // Folosim aceleași intervale de timp ca înainte pentru Avansat
     switch (level) {
       case 1: return 4.0;
       case 2: return 3.8;
@@ -137,12 +129,11 @@ export const GameProvider = ({ children }) => {
     }
   };
   
-  // Funcție pentru a primi recompense în funcție de dificultate
   const getRewardForMatch = () => {
     switch (gameState.difficulty) {
-      case 'easy': return 2;  // 2 monede per pereche
-      case 'advance': return 5;  // 5 monede per pereche
-      case 'hard': return 15;  // 15 monede per pereche (specificat în cerință)
+      case 'easy': return 2;  
+      case 'advance': return 5;  
+      case 'hard': return 15;  
       default: return 1;
     }
   };
@@ -166,5 +157,4 @@ export const GameProvider = ({ children }) => {
   );
 };
 
-// Hook personalizat pentru a folosi contextul mai ușor
 export const useGame = () => useContext(GameContext); 

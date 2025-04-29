@@ -74,21 +74,21 @@ const HomeScreen = ({ navigation }) => {
           ]}
         >
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>MEMORIA</Text>
-            <Text style={styles.subtitle}>Testează-ți Mintea!</Text>
+            <Text style={styles.title}>MEMORY</Text>
+            <Text style={styles.subtitle}>Test your memory!</Text>
           </View>
           
           <View style={styles.statsContainerWrapper}>
             <View style={styles.statsContainer}>
               <View style={styles.coinContainer}>
-                <Text style={styles.statsLabel}>AUR</Text>
+                <Text style={styles.statsLabel}>COINS</Text>
                 <Text style={styles.coinsText}>💰 {coins}</Text> 
               </View>
               <View style={styles.difficultyContainer}>
-                <Text style={styles.statsLabel}>MOD JOC</Text>
+                <Text style={styles.statsLabel}>GAME MODE</Text>
                 <Text style={styles.difficultyText}>
-                  {difficulty === 'easy' ? 'NOVice' : 
-                   difficulty === 'advance' ? 'AVANSAT' : 'EXPERT'}
+                  {difficulty === 'easy' ? 'Easy' : 
+                   difficulty === 'advance' ? 'Advance' : 'Expert'}
                 </Text>
               </View>
             </View>
@@ -100,7 +100,7 @@ const HomeScreen = ({ navigation }) => {
               onPress={handleStartGame}
               activeOpacity={0.8}
             >
-              <Text style={styles.mainButtonText}>JOACĂ</Text>
+              <Text style={styles.mainButtonText}>PLAY</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -108,7 +108,7 @@ const HomeScreen = ({ navigation }) => {
               onPress={handleOpenShop}
               activeOpacity={0.8}
             >
-              <Text style={styles.mainButtonText}>MAGAZIN</Text>
+              <Text style={styles.mainButtonText}>SHOP</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
@@ -116,7 +116,7 @@ const HomeScreen = ({ navigation }) => {
               onPress={() => setShowTutorialModal(true)}
               activeOpacity={0.8}
             >
-              <Text style={styles.mainButtonText}>INSTRUCȚIUNI</Text>
+              <Text style={styles.mainButtonText}>INSTRUCTIONS</Text>
             </TouchableOpacity>
           </View>
           
@@ -128,15 +128,15 @@ const HomeScreen = ({ navigation }) => {
           >
             <View style={styles.modalContainer}>
               <View style={styles.difficultyModalContent}> 
-                <Text style={styles.modalTitle}>ALEGE NIVELUL</Text>
+                <Text style={styles.modalTitle}>CHOOSE THE LEVEL</Text>
                 
                 <TouchableOpacity 
                   style={[styles.difficultyButton, styles.easyDifficultyButton]}
                   onPress={() => handleSelectDifficulty('easy')}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.difficultyButtonText}>NOVICE</Text>
-                  <Text style={styles.difficultyInfoText}>2 💰 / Pereche</Text>
+                  <Text style={styles.difficultyButtonText}>Easy</Text>
+                  <Text style={styles.difficultyInfoText}>2 💰 / Pair</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
@@ -144,8 +144,8 @@ const HomeScreen = ({ navigation }) => {
                   onPress={() => handleSelectDifficulty('advance')}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.difficultyButtonText}>AVANSAT</Text>
-                   <Text style={styles.difficultyInfoText}>5 💰 / Pereche</Text>
+                  <Text style={styles.difficultyButtonText}>Advance</Text>
+                   <Text style={styles.difficultyInfoText}>5 💰 / Pair</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
@@ -153,8 +153,8 @@ const HomeScreen = ({ navigation }) => {
                   onPress={() => handleSelectDifficulty('hard')}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.difficultyButtonText}>EXPERT</Text>
-                   <Text style={styles.difficultyInfoText}>15 💰 / Pereche</Text>
+                  <Text style={styles.difficultyButtonText}>Hard</Text>
+                   <Text style={styles.difficultyInfoText}>15 💰 / Pair</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
@@ -176,28 +176,28 @@ const HomeScreen = ({ navigation }) => {
           >
             <View style={styles.modalContainer}>
               <View style={[styles.modalContent, styles.tutorialModal]}>
-                <Text style={[styles.modalTitle, styles.tutorialTitle]}>INSTRUCȚIUNI</Text>
+                <Text style={[styles.modalTitle, styles.tutorialTitle]}>INSTRUCTIONS</Text>
                 
                 <View style={styles.tutorialContent}>
-                  <Text style={styles.tutorialHeading}>🎯 Cum să joci:</Text>
+                  <Text style={styles.tutorialHeading}>🎯 How to play:</Text>
                   <Text style={styles.tutorialText}>
-                    › Găsește perechile de cărți identice!{'\n'}
-                    › Câștigă AUR pentru fiecare pereche.{'\n'}
-                    › Deblochează seturi noi de cărți din MAGAZIN.{'\n'}
+                    › Find the pairs of identical cards!{'\n'}
+                    › Earn Coins for each pair.{'\n'}
+                    › Unlock new card sets from the SHOP.{'\n'}
                   </Text>
                   
-                  <Text style={styles.tutorialHeading}>📊 Niveluri de Dificultate:</Text>
+                  <Text style={styles.tutorialHeading}>📊 Difficulty Levels:</Text>
                   <Text style={styles.tutorialText}>
-                    <Text style={[styles.boldText, {color: '#2ecc71'}]}>NOVICE:</Text> Cărțile rămân fixe.{'\n'}
-                    <Text style={[styles.boldText, {color: '#e67e22'}]}>AVANSAT:</Text> Cărțile se amestecă!{'\n'}
-                    <Text style={[styles.boldText, {color: '#e74c3c'}]}>EXPERT:</Text> Amestecare + Vieți Limitate!{'\n'}
+                    <Text style={[styles.boldText, {color: '#2ecc71'}]}>Easy:</Text> The cards remain fixed.{'\n'}
+                    <Text style={[styles.boldText, {color: '#e67e22'}]}>Advance:</Text> The cards are shuffled!{'\n'}
+                    <Text style={[styles.boldText, {color: '#e74c3c'}]}>Expert:</Text> Shuffle + Limited Lives!{'\n'}
                   </Text>
                   
-                  <Text style={styles.tutorialHeading}>💰 Recompense AUR:</Text>
+                  <Text style={styles.tutorialHeading}>💰 Earn Coins:</Text>
                   <Text style={styles.tutorialText}>
-                    <Text style={[styles.boldText, {color: '#2ecc71'}]}>NOVICE:</Text> 2 💰 / Pereche{'\n'}
-                    <Text style={[styles.boldText, {color: '#e67e22'}]}>AVANSAT:</Text> 5 💰 / Pereche{'\n'}
-                    <Text style={[styles.boldText, {color: '#e74c3c'}]}>EXPERT:</Text> 15 💰 / Pereche{'\n'}
+                    <Text style={[styles.boldText, {color: '#2ecc71'}]}>Easy:</Text> 2 💰 / Pair{'\n'}
+                    <Text style={[styles.boldText, {color: '#e67e22'}]}>Advance:</Text> 5 💰 / Pair{'\n'}
+                    <Text style={[styles.boldText, {color: '#e74c3c'}]}>Expert:</Text> 15 💰 / Pair{'\n'}
                   </Text>
                 </View>
                 
@@ -206,7 +206,7 @@ const HomeScreen = ({ navigation }) => {
                   onPress={() => setShowTutorialModal(false)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.closeModalButtonText}>ÎNȚELES</Text>
+                  <Text style={styles.closeModalButtonText}>CLOSE</Text>
                 </TouchableOpacity>
               </View>
             </View>

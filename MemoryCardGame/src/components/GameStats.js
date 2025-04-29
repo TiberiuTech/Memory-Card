@@ -13,7 +13,6 @@ const GameStats = () => {
     timePerCard
   } = useGame();
   
-  // Calculăm numărul de vieți afișate
   const renderLives = () => {
     if (difficulty !== 'hard') return null;
     
@@ -22,12 +21,10 @@ const GameStats = () => {
     
     const livesArray = [];
     
-    // Adăugăm vieți complete
     for (let i = 0; i < fullLives; i++) {
       livesArray.push('❤️');
     }
     
-    // Adăugăm jumătate de viață dacă e cazul
     if (hasHalfLife) {
       livesArray.push('💔');
     }
@@ -39,20 +36,20 @@ const GameStats = () => {
     <View style={styles.container}>
       <View style={styles.topRow}>
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>Nivel:</Text>
+          <Text style={styles.statLabel}>Level:</Text>
           <Text style={styles.statValue}>{level}</Text>
         </View>
         
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>Dificultate:</Text>
+          <Text style={styles.statLabel}>Difficulty:</Text>
           <Text style={styles.statValue}>
-            {difficulty === 'easy' ? 'Ușor' : 
-              difficulty === 'advance' ? 'Avansat' : 'Greu'}
+            {difficulty === 'easy' ? 'Easy' : 
+              difficulty === 'advance' ? 'Advance' : 'Hard'}
           </Text>
         </View>
         
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>Monede:</Text>
+          <Text style={styles.statLabel}>Coins:</Text>
           <Text style={styles.statValue}>{coins} 🪙</Text>
         </View>
       </View>
@@ -60,21 +57,21 @@ const GameStats = () => {
       <View style={styles.bottomRow}>
         {difficulty === 'hard' && (
           <View style={styles.stat}>
-            <Text style={styles.statLabel}>Vieți:</Text>
+            <Text style={styles.statLabel}>Lives:</Text>
             <Text style={styles.statValue}>{renderLives()}</Text>
           </View>
         )}
         
         <View style={styles.stat}>
-          <Text style={styles.statLabel}>Timp/Carte:</Text>
+          <Text style={styles.statLabel}>Time/Card:</Text>
           <Text style={styles.statValue}>{timePerCard}s</Text>
         </View>
         
         <View style={styles.rewardStat}>
-          <Text style={styles.statLabel}>Recompensă:</Text>
+          <Text style={styles.statLabel}>Reward:</Text>
           <Text style={styles.statValue}>
             {difficulty === 'easy' ? '2' : 
-             difficulty === 'advance' ? '5' : '15'} 🪙/pereche
+             difficulty === 'advance' ? '5' : '15'} 🪙/pair
           </Text>
         </View>
       </View>
@@ -94,7 +91,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
-    width: width * 0.95, // Ocupă mai multă lățime în orientarea portrait
+    width: width * 0.95,
   },
   topRow: {
     flexDirection: 'row',
@@ -114,7 +111,7 @@ const styles = StyleSheet.create({
   },
   rewardStat: {
     margin: 3,
-    flex: 1.5, // Puțin mai mare pentru textul mai lung
+    flex: 1.5,
   },
   statLabel: {
     fontSize: 11,

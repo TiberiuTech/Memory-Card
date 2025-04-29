@@ -1,14 +1,8 @@
-/**
- * Utilități pentru gestionarea cărților de joc
- */
-
-// Generează perechile de cărți (1-8, fiecare apare de două ori)
 export const generateCardPairs = () => {
   const values = [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8];
   return shuffleArray(values);
 };
 
-// Amestecă un array folosind algoritmul Fisher-Yates
 export const shuffleArray = (array) => {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -18,9 +12,7 @@ export const shuffleArray = (array) => {
   return newArray;
 };
 
-// Obține configurația de amestecare pentru un anumit nivel
 export const getShufflePairsForLevel = (level) => {
-  // Configurația din descrierea jocului
   const shuffleConfigs = {
     1: [[1, 12], [8, 14], [15, 6], [5, 3], [4, 10], [13, 7], [9, 16], [11, 2]],
     2: [[3, 9], [7, 15], [5, 11], [2, 14], [6, 12], [4, 16], [1, 8], [10, 13]],
@@ -37,20 +29,17 @@ export const getShufflePairsForLevel = (level) => {
   return shuffleConfigs[level] || shuffleConfigs[1];
 };
 
-// Calculează poziția unei cărți în grid
 export const calculateCardPosition = (index) => {
   const row = Math.floor(index / 4);
   const col = index % 4;
   return { row, col };
 };
 
-// Obține timpul per carte în funcție de nivel și dificultate
 export const getTimePerCard = (level, difficulty) => {
   if (difficulty === 'hard') {
-    return 3.5; // Timp fix pentru hard
+    return 3.5;
   }
   
-  // Tabel de timpul per nivel
   const timeLevels = {
     1: 4.0,
     2: 3.8,

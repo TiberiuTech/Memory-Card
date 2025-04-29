@@ -2,7 +2,6 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
-// Importăm ecranele
 import HomeScreen from '../screens/HomeScreen';
 import GameScreen from '../screens/GameScreen';
 import ShopScreen from '../screens/ShopScreen';
@@ -16,7 +15,7 @@ const AppNavigator = () => {
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: '#fff' }, // Revenit la fundal alb
+          cardStyle: { backgroundColor: '#fff' },
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />

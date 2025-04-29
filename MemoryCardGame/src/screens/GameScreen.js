@@ -17,29 +17,24 @@ const GameScreen = ({ navigation }) => {
   
   const [isPaused, setIsPaused] = useState(false);
   
-  // Afișează modal pentru pauză
   const handlePause = () => {
     setIsPaused(true);
   };
   
-  // Continuă jocul
   const handleResume = () => {
     setIsPaused(false);
   };
   
-  // Mergi înapoi la meniu
   const handleBackToMenu = () => {
     setIsPaused(false);
     navigation.goBack();
   };
   
-  // Resetează nivelul curent
   const handleRestart = () => {
     setIsPaused(false);
     resetGame();
   };
   
-  // Verifică dacă jocul s-a terminat (din cauza vieților)
   const isGameOver = difficulty === 'hard' && lives <= 0;
   
   return (
@@ -54,7 +49,7 @@ const GameScreen = ({ navigation }) => {
             style={styles.pauseButton}
             onPress={handlePause}
           >
-            <Text style={styles.buttonText}>⏸️ Pauză</Text>
+            <Text style={styles.buttonText}>⏸️ Pause</Text>
           </TouchableOpacity>
         </View>
         
@@ -62,7 +57,7 @@ const GameScreen = ({ navigation }) => {
           <GameBoard />
         ) : (
           <View style={styles.gameOverContainer}>
-            <Text style={styles.gameOverText}>Joc Terminat!</Text>
+            <Text style={styles.gameOverText}>Game Over!</Text>
             <TouchableOpacity
               style={[styles.button, styles.restartButton]}
               onPress={handleRestart}
@@ -72,7 +67,6 @@ const GameScreen = ({ navigation }) => {
           </View>
         )}
         
-        {/* Modal pentru pauză */}
         <Modal
           visible={isPaused}
           transparent={true}
@@ -81,13 +75,13 @@ const GameScreen = ({ navigation }) => {
         >
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Joc în pauză</Text>
+              <Text style={styles.modalTitle}>Game Paused</Text>
               
               <TouchableOpacity
                 style={[styles.button, styles.modalButton]}
                 onPress={handleResume}
               >
-                <Text style={styles.buttonText}>Continuă</Text>
+                <Text style={styles.buttonText}>Continue</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
@@ -101,7 +95,7 @@ const GameScreen = ({ navigation }) => {
                 style={[styles.button, styles.modalButton, styles.backButton]}
                 onPress={handleBackToMenu}
               >
-                <Text style={styles.buttonText}>Înapoi la Meniu</Text>
+                <Text style={styles.buttonText}>Back to Menu</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -118,7 +112,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 5, // Mai puțin padding în modul portrait
+    padding: 5,
   },
   header: {
     alignItems: 'center',

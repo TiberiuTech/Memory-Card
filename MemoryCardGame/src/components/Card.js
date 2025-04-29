@@ -3,44 +3,34 @@ import { StyleSheet, Pressable, View, Text, Dimensions, Animated, Image, Easing 
 import { useGame } from '../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
-// Calculăm dimensiunea cardului bazată pe orientarea portrait
-// În modul portrait, folosim lățimea ecranului pentru a calcula dimensiunea cardului
-// Vrem 4 carduri pe lățime, deci împărțim lățimea la 4 și reducem puțin pentru marje
 
-// Calculăm dimensiunea cardului pentru modul portrait
-const CARD_WIDTH = width * 0.22; // Revenim la lățimea originală
-const CARD_HEIGHT = CARD_WIDTH * 1.5; // Mărim raportul de aspect pentru carduri mai înalte
+const CARD_WIDTH = width * 0.22;
+const CARD_HEIGHT = CARD_WIDTH * 1.5;
 
-// Funcție helper pentru a găsi poziția pe grid (row, col) pentru un număr de poziție (1-16)
+
 const getPositionFromGridNumber = (gridPos) => {
-  const pos = gridPos - 1; // Convertim de la 1-based la 0-based
+  const pos = gridPos - 1;
   const row = Math.floor(pos / 4);
   const col = pos % 4;
   return { row, col };
 };
 
-// Calculăm coordonatele x,y pentru o poziție pe grid
 const getCoordinatesForPosition = (gridPos) => {
   const { row, col } = getPositionFromGridNumber(gridPos);
-  // Calculăm coordonatele absolute
-  const x = col * (CARD_WIDTH + 6); // 6 = marja totală între cărți
+  const x = col * (CARD_WIDTH + 6);
   const y = row * (CARD_HEIGHT + 6);
   return { x, y };
 };
 
-// Helper pentru animația de stivă în nivelul hard
 const getStackCoordinates = (gridPos) => {
-  // Pentru animația de stivă, toate cărțile vor fi inițial pe prima poziție
   const { row, col } = getPositionFromGridNumber(1);
   const x = col * (CARD_WIDTH + 6);
   const y = row * (CARD_HEIGHT + 6);
   return { x, y };
 };
 
-// Importăm imaginea de pe spatele cărților
-const cardBackImage = require('../assets/images/Pug.png'); // Înlocuiește cu numele fișierului tău
+const cardBackImage = require('../assets/images/Pug.png');
 
-// Înlocuim imaginea de pe fața cardului cu imaginea de înghețată
 const iceCreamImages = [
   require('../assets/images/IceCreamBlue.png'),   //1
   require('../assets/images/IceCreamGreen.png'),  //2
@@ -55,22 +45,18 @@ const iceCreamImages = [
 const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, animated, swapTo, isStack, stackPosition }) => {
   const { difficulty } = useGame();
   
-  // Log pentru debug
   useEffect(() => {
     if (difficulty === 'hard' && isStack) {
-      console.log(`Card ${id} (valoare ${value}): în stivă la poziția ${stackPosition}`);
+      console.log(`Card ${id} (value ${value}): in stack ${stackPosition}`);
     }
   }, [isStack, stackPosition, difficulty, id, value]);
   
   const flipAnimation = new Animated.Value(isFlipped ? 1 : 0);
   
-  // Animație pentru swapping
   const swapAnimation = useRef(new Animated.Value(0)).current;
   
-  // Animație pentru distribuirea cărților în nivelul hard
   const stackAnimation = useRef(new Animated.Value(0)).current;
   
-  // Resetăm animația de stack când se activează
   useEffect(() => {
     if (isStack) {
       stackAnimation.setValue(0);
@@ -82,7 +68,6 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     }
   }, [isStack, stackPosition]);
   
-  // Resetăm animația de swap când se schimbă starea animated
   useEffect(() => {
     if (animated) {
       swapAnimation.setValue(0);
@@ -94,18 +79,16 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     }
   }, [animated, swapTo]);
   
-  // Accelerăm animația pentru a evita probleme de timing
   useEffect(() => {
     Animated.timing(flipAnimation, {
       toValue: isFlipped ? 1 : 0,
-      duration: 600, // Am crescut durata pentru o animație mai complexă
-      easing: Easing.bounce, // Adăugăm un efect de bounce
+      duration: 600,
+      easing: Easing.bounce,
       useNativeDriver: true,
-      delay: 0, // Eliminăm delay-ul
+      delay: 0,
     }).start();
   }, [isFlipped]);
   
-  // Interpolări pentru animație
   const frontInterpolate = flipAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: ['180deg', '0deg'],
@@ -116,7 +99,6 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     outputRange: ['0deg', '180deg'],
   });
   
-  // Adăugăm și o animație de opacitate pentru a face cardul mai vizibil
   const frontOpacity = flipAnimation.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [0, 0, 1],
@@ -127,7 +109,6 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     outputRange: [1, 0, 0],
   });
   
-  // Adăugăm efecte suplimentare de scalare și opacitate
   const scale = flipAnimation.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [1, 1.2, 1],
@@ -148,47 +129,39 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
     opacity: backOpacity,
   };
   
-  // Stiluri condiționale pentru cartonașe potrivite
   const cardStyle = isMatched 
     ? [styles.card, styles.matchedCard] 
     : styles.card;
   
-  // Stiluri pentru animația de schimb între poziții
   let containerStyle = [styles.container];
   
   if (animated && swapTo) {
-    // Calculăm coordonatele pentru poziția actuală și cea țintă
     const currentPos = getCoordinatesForPosition(gridPos);
     const targetPos = getCoordinatesForPosition(swapTo);
     
-    // Calculăm diferența pentru a anima
     const deltaX = targetPos.x - currentPos.x;
     const deltaY = targetPos.y - currentPos.y;
     
-    // Interpolăm mișcarea
     const translateX = swapAnimation.interpolate({
       inputRange: [0, 0.4, 0.6, 1],
-      outputRange: [0, deltaX, deltaX, 0], // Mișcă la target apoi înapoi
+      outputRange: [0, deltaX, deltaX, 0],
     });
     
     const translateY = swapAnimation.interpolate({
       inputRange: [0, 0.4, 0.6, 1],
-      outputRange: [0, deltaY, deltaY, 0], // Mișcă la target apoi înapoi
+      outputRange: [0, deltaY, deltaY, 0],
     });
     
-    // Adăugăm și scalare pentru efect vizual
     const scale = swapAnimation.interpolate({
       inputRange: [0, 0.2, 0.8, 1],
       outputRange: [1, 1.2, 1.2, 1],
     });
     
-    // Adăugăm rotație pentru un efect mai realist
     const rotate = swapAnimation.interpolate({
       inputRange: [0, 0.5, 1],
       outputRange: ['0deg', `${gridPos % 2 === 0 ? 180 : -180}deg`, '0deg'],
     });
     
-    // Adăugăm elevație pentru efect 3D
     const elevation = swapAnimation.interpolate({
       inputRange: [0, 0.5, 1],
       outputRange: [1, 10, 1],
@@ -202,25 +175,22 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
         { rotate }
       ],
       elevation,
-      zIndex: 100, // Asigurăm că cartea animată este deasupra celorlalte
+      zIndex: 100,
     });
   }
   
-  // Adăugăm stiluri pentru animația de stivă
   if (isStack && stackPosition) {
-    // Calculăm coordonatele pentru poziția de stivă
     const currentPos = getCoordinatesForPosition(gridPos);
     const targetPos = getCoordinatesForPosition(stackPosition);
     
-    // Adăugăm stiluri de stivă
     containerStyle.push({
       position: 'absolute',
       left: targetPos.x,
       top: targetPos.y,
-      zIndex: 200 + id, // Asigurăm că cărțile sunt stivuite în ordine
+      zIndex: 200 + id,
       transform: [
-        { scale: 1 + (id * 0.01) }, // Ușor mai mare pentru efect de stivă
-        { translateY: id * -0.5 }, // Decalaj vertical pentru efect de stivă
+        { scale: 1 + (id * 0.01) },
+        { translateY: id * -0.5 },
       ]
     });
   }
@@ -232,12 +202,10 @@ const Card = ({ id, value, isFlipped, isMatched, onPress, position, gridPos, ani
         onPress={() => !isFlipped && !isMatched && onPress(id)}
         disabled={isFlipped || isMatched || isStack}
       >
-        {/* Partea din față (valoarea cardului) */}
         <Animated.View style={[cardStyle, frontAnimatedStyle, styles.cardFace]}>
           <Image source={iceCreamImages[value - 1]} style={styles.cardBackImage} resizeMode="cover" />
         </Animated.View>
         
-        {/* Partea din spate (spatele cardului) */}
         <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle, styles.cardFace]}>
           <Image source={cardBackImage} style={styles.cardBackImage} resizeMode="cover" />
         </Animated.View>
@@ -271,20 +239,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 6,
     backgroundColor: '#fff',
-    elevation: 5, // Creștem elevația pentru umbră mai pronunțată
+    elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3, // Creștem opacitatea umbrei
-    shadowRadius: 3, // Creștem raza umbrei
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   cardBack: {
     backgroundColor: '#5c6bc0',
   },
   matchedCard: {
-    // Eliminăm efectul de colorare verde
   },
   cardText: {
-    fontSize: Math.max(CARD_WIDTH * 0.45, 14), // Asigurăm o dimensiune lizibilă
+    fontSize: Math.max(CARD_WIDTH * 0.45, 14),
     fontWeight: 'bold',
     color: '#333',
   },

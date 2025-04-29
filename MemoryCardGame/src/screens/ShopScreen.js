@@ -5,25 +5,23 @@ import {
   StyleSheet, 
   FlatList, 
   TouchableOpacity, 
-  Image, 
   Alert,
   SafeAreaView,
   Modal
 } from 'react-native';
 import { useGame } from '../context/GameContext';
 
-// Datele pentru cardurile disponibile în magazin
 const SHOP_CARDS = [
-  { id: 1, name: 'Carte Standard', price: 50, image: '🃏', description: 'Un set de cărți standard pentru joc', level: 1 },
-  { id: 2, name: 'Carte Fructe', price: 100, image: '🍎', description: 'Un set de cărți cu tematică de fructe', level: 2 },
-  { id: 3, name: 'Carte Animale', price: 150, image: '🐱', description: 'Un set de cărți cu tematică de animale', level: 3 },
-  { id: 4, name: 'Carte Sport', price: 200, image: '⚽', description: 'Un set de cărți cu tematică sportivă', level: 4 },
-  { id: 5, name: 'Carte Spațiu', price: 250, image: '🚀', description: 'Un set de cărți cu tematică spațială', level: 5 },
-  { id: 6, name: 'Carte Fantezie', price: 300, image: '🧙‍♂️', description: 'Un set de cărți cu tematică fantasy', level: 6 },
-  { id: 7, name: 'Carte Muzică', price: 350, image: '🎵', description: 'Un set de cărți cu tematică muzicală', level: 7 },
-  { id: 8, name: 'Carte Tehnologie', price: 400, image: '💻', description: 'Un set de cărți cu tematică tehnologică', level: 8 },
-  { id: 9, name: 'Carte Steluțe', price: 450, image: '⭐', description: 'Un set de cărți premium cu steluțe', level: 9 },
-  { id: 10, name: 'Carte Aurită', price: 500, image: '👑', description: 'Setul de cărți de lux, aurite', level: 10 },
+  { id: 1, name: 'standard card', price: 50, image: '🃏', description: 'set of standard cards'},
+  { id: 2, name: 'fruits card', price: 100, image: '🍎', description: 'set of fruits cards'},
+  { id: 3, name: 'animals card', price: 150, image: '🐱', description: 'set of animals cards'},
+  { id: 4, name: 'sport card', price: 200, image: '⚽', description: 'set of sport cards'},
+  { id: 5, name: 'space card', price: 250, image: '🚀', description: 'set of space cards'},
+  { id: 6, name: 'fantasy card', price: 300, image: '🧙‍♂️', description: 'set of fantasy cards'},
+  { id: 7, name: 'music card', price: 350, image: '🎵', description: 'set of music cards'},
+  { id: 8, name: 'technology card', price: 400, image: '💻', description: 'set of technology cards'},
+  { id: 9, name: 'stars card', price: 450, image: '⭐', description: 'set of stars cards'},
+  { id: 10, name: 'gold card', price: 500, image: '👑', description: 'set of gold cards'},
 ];
 
 const ShopScreen = ({ navigation }) => {
@@ -31,38 +29,33 @@ const ShopScreen = ({ navigation }) => {
   const [selectedCard, setSelectedCard] = useState(null);
   const [showCardModal, setShowCardModal] = useState(false);
   
-  // Filtrăm cardurile bazate pe nivelul utilizatorului
-  const availableCards = SHOP_CARDS.filter(card => card.level <= level);
+  const availableCards = SHOP_CARDS;
   
-  // Verificăm dacă utilizatorul poate cumpăra cardul
   const canPurchaseCard = (card) => {
     return coins >= card.price && !unlockedCards.includes(card.id);
   };
   
-  // Cumpără un card
   const handlePurchaseCard = (card) => {
     if (canPurchaseCard(card)) {
       const success = spendCoins(card.price);
       if (success) {
         unlockedCards(card.id);
-        Alert.alert('Succes!', `Ai cumpărat ${card.name}!`);
+        Alert.alert('Success!', `You have purchased ${card.name}!`);
       } else {
-        Alert.alert('Eroare', 'A apărut o problemă la achiziționarea cardului.');
+        Alert.alert('Error', 'An error occurred while purchasing the card.');
       }
     } else if (unlockedCards.includes(card.id)) {
-      Alert.alert('Informație', 'Ai deblocat deja acest set de cărți.');
+      Alert.alert('Information', 'You have already unlocked this set of cards.');
     } else {
-      Alert.alert('Monede insuficiente', 'Nu ai destule monede pentru a cumpăra acest set de cărți.');
+      Alert.alert('Insufficient coins', 'You do not have enough coins to purchase this set of cards.');
     }
   };
   
-  // Selectează un card pentru a vedea detaliile
   const handleSelectCard = (card) => {
     setSelectedCard(card);
     setShowCardModal(true);
   };
   
-  // Afișați un articol din lista de cărți
   const renderShopItem = ({ item }) => {
     const isUnlocked = unlockedCards.includes(item.id);
     
@@ -78,10 +71,10 @@ const ShopScreen = ({ navigation }) => {
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{item.name}</Text>
           <Text style={styles.cardPrice}>
-            {isUnlocked ? 'Deblocat' : `${item.price} 🪙`}
+            {isUnlocked ? 'Unlocked' : `${item.price} 🪙`}
           </Text>
         </View>
-        <Text style={styles.cardLevel}>Nivel {item.level}</Text>
+        <Text style={styles.cardLevel}>Level {item.level}</Text>
       </TouchableOpacity>
     );
   };
@@ -90,8 +83,8 @@ const ShopScreen = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Magazin</Text>
-          <Text style={styles.coinsText}>Monede: {coins} 🪙</Text>
+          <Text style={styles.title}>Shop</Text>
+          <Text style={styles.coinsText}>Coins: {coins} 🪙</Text>
         </View>
         
         <FlatList
@@ -102,8 +95,8 @@ const ShopScreen = ({ navigation }) => {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
-                Nu există cărți disponibile la nivelul tău actual.
-                Continuă să joci pentru a debloca mai multe!
+                There are no cards available at your current level.
+                Continue playing to unlock more!
               </Text>
             </View>
           }
@@ -113,10 +106,9 @@ const ShopScreen = ({ navigation }) => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={styles.backButtonText}>Înapoi</Text>
+          <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
         
-        {/* Modal pentru detaliile cardului */}
         <Modal
           visible={showCardModal}
           transparent={true}
